@@ -30,8 +30,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from subprocess import Popen, PIPE
-from distutils import spawn
+import subprocess
+from shutil import which
 import os
 import math
 import random
@@ -70,15 +70,23 @@ def getGPUs():
         # If the platform is Windows and nvidia-smi 
         # could not be found from the environment path, 
         # try to find it from system drive with default installation path
-        nvidia_smi = spawn.find_executable('nvidia-smi')
+        nvidia_smi = which('nvidia-smi')
         if nvidia_smi is None:
             nvidia_smi = "%s\\Program Files\\NVIDIA Corporation\\NVSMI\\nvidia-smi.exe" % os.environ['systemdrive']
+        creation_flags = subprocess.CREATE_NO_WINDOW
     else:
         nvidia_smi = "nvidia-smi"
+        creation_flags = 0
 	
     # Get ID, processing and memory utilization for all GPUs
     try:
-        p = Popen([nvidia_smi,"--query-gpu=index,uuid,utilization.gpu,memory.total,memory.used,memory.free,driver_version,name,gpu_serial,display_active,display_mode,temperature.gpu", "--format=csv,noheader,nounits"], stdout=PIPE)
+        p = subprocess.Popen(
+            [nvidia_smi,
+             "--query-gpu=index,uuid,utilization.gpu,memory.total,memory.used,memory.free,driver_version,name,gpu_serial,display_active,display_mode,temperature.gpu",
+             "--format=csv,noheader,nounits"],
+            stdout=subprocess.PIPE,
+            creationflags=creation_flags
+        )
         stdout, stderror = p.communicate()
     except:
         return []
