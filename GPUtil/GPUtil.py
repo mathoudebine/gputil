@@ -88,6 +88,8 @@ def getGPUs():
             creationflags=creation_flags
         )
         stdout, stderror = p.communicate()
+        if p.returncode != 0:
+            return []
     except:
         return []
     output = stdout.decode('UTF-8')
